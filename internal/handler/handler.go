@@ -2,125 +2,57 @@ package handler
 
 import (
 	"context"
-	"github.com/ether-echo/telegram-api-service/pkg/config"
+	"github.com/ether-echo/telegram-api-service/internal/repository"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
-	"log"
 )
 
+type IService interface {
+	StartService(ctx context.Context, b *bot.Bot, update *models.Update)
+	SupportService(ctx context.Context, b *bot.Bot, update *models.Update)
+	LayoutTAROService(ctx context.Context, b *bot.Bot, update *models.Update)
+	NumerologyService(ctx context.Context, b *bot.Bot, update *models.Update)
+	DefaultService(ctx context.Context, b *bot.Bot, update *models.Update)
+}
+
 type Handler struct {
-	botTG *bot.Bot
+	IService IService
 }
 
-func NewHandler(ctx context.Context, conf *config.Config) *Handler {
-
-	b, err := bot.New(conf.Token)
-	if err != nil {
-		panic(err)
-	}
-
-	commands := []models.BotCommand{
-		{Command: "/start", Description: "Перезапустить бота"},
-		{Command: "/support", Description: "Поддержка"},
-	}
-
-	_, err = b.SetMyCommands(context.Background(), &bot.SetMyCommandsParams{
-		Commands: commands,
-	})
-	if err != nil {
-		log.Fatal("Ошибка при установке команд:", err)
-	}
-
+func NewHandler(service IService) *Handler {
 	return &Handler{
-		botTG: b,
+		IService: service,
 	}
 }
 
-func (h *Handler) RegisterHandler(ctx context.Context) {
-
-	h.botTG.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypePrefix, h.startHandler)
-
-	h.botTG.RegisterHandler(bot.HandlerTypeMessageText, "/support", bot.MatchTypePrefix, h.supportHandler)
-	h.botTG.RegisterHandler(bot.HandlerTypeMessageText, "💺 Поддержка", bot.MatchTypePrefix, h.supportHandler)
-
-	h.botTG.Start(ctx)
+func (h *Handler) StartHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	h.IService.StartService(ctx, b, update)
 }
 
-func (h *Handler) startHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	if update.Message == nil {
-		log.Println("Message nil")
-		return
-	}
-
-	keyboard := &models.ReplyKeyboardMarkup{
-		Keyboard: [][]models.KeyboardButton{
-			{
-				{Text: "🔮 Расклад ТАРО"},
-				{Text: "💸 Нумерология"},
-			},
-			{
-				{Text: "💺 Поддержка"},
-			},
-		},
-		ResizeKeyboard:  true, // Уменьшает клавиатуру
-		OneTimeKeyboard: false,
-	}
-
-	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
-		Text: "🔮Приветствую тебя в мире ТАРО.\n\n *Хочешь найти ответы на интересующие тебя вопросы?*" +
-			"\n\nМои карты помогут найти ответы по направлениям:\n" +
-			"*- конкретный вопрос*\n" +
-			"*- день*\n" +
-			"*- любовь*\n" +
-			"*- успех*\n" +
-			"*- будущий год*\n" +
-			"*Поддержка* /support\n" +
-			"Нужна помощь? Напишите нам в чат\n\n" +
-			"Я стану твоим проводником по лабиринтам судьбы, *помогу разгадать тайные значения карт* и поделюсь мудростью," +
-			" которую таит в себе будущее.\n" +
-			"💫 Выбери в меню на что будем делать расклад и следуй подсказкам👇",
-		ParseMode:   models.ParseModeMarkdownV1,
-		ReplyMarkup: keyboard,
-	})
+func (h *Handler) SupportHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	h.IService.SupportService(ctx, b, update)
 }
 
-func (h *Handler) supportHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+func (h *Handler) LayoutTAROHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	h.IService.LayoutTAROService(ctx, b, update)
+}
 
-	keyboard := &models.InlineKeyboardMarkup{
-		InlineKeyboard: [][]models.InlineKeyboardButton{
-			{
-				{
-					Text: "Написать в чат",
-					URL:  "https://t.me/Degprt",
-				},
-			},
-		},
-	}
+func (h *Handler) NumerologyHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	h.IService.NumerologyService(ctx, b, update)
+}
 
-	messageText := "Нужна помощь? Напишите мне в чат!"
+func (h *Handler) DefaultHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	h.IService.DefaultService(ctx, b, update)
+}
 
-	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID:      update.Message.Chat.ID,
-		Text:        messageText,
-		ReplyMarkup: keyboard,
-	})
+func (h *Handler) StartBot(ctx context.Context, rep *repository.Repository) {
 
-	if err != nil {
-		log.Println("Ошибка при отправке сообщения с кнопкой:", err)
-	}
+	//rep.BotTG.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypePrefix, h.StartHandler)
+	//rep.BotTG.RegisterHandler(bot.HandlerTypeMessageText, "/support", bot.MatchTypePrefix, h.SupportHandler)
+	//rep.BotTG.RegisterHandler(bot.HandlerTypeMessageText, "💺 Поддержка", bot.MatchTypePrefix, h.SupportHandler)
+	//rep.BotTG.RegisterHandler(bot.HandlerTypeMessageText, "🔮 Расклад ТАРО", bot.MatchTypePrefix, h.LayoutTAROHandler)
+	//rep.BotTG.RegisterHandler(bot.HandlerTypeMessageText, "💸 Нумерология", bot.MatchTypePrefix, h.NumerologyHandler)
+	rep.BotTG.RegisterHandler(bot.HandlerTypeMessageText, "", bot.MatchTypePrefix, h.DefaultHandler)
 
-	//linkOptions := &models.LinkPreviewOptions{
-	//	URL:           &url,
-	//	ShowAboveText: &showText,
-	//}
-
-	//b.SendMessage(ctx, &bot.SendMessageParams{
-	//	ChatID: update.Message.Chat.ID,
-	//	Text: "Нужна помощь? Напишите мне в чат!\n" +
-	//		"Кнопка 1 - http://example1.com\n" +
-	//		"Кнопка 2 - http://example2.com",
-	//	ReplyMarkup: keyboard,
-	//	ParseMode:          models.ParseModeMarkdownV1,
-	//})
+	rep.BotTG.Start(ctx)
 }
