@@ -184,7 +184,7 @@ func (r *Repository) SendMessage(chatId int64, message, url string) {
 				{
 					{
 						Text: "Написать в чат",
-						URL:  "https://t.me/Degprt",
+						URL:  url,
 					},
 				},
 			},
@@ -195,7 +195,7 @@ func (r *Repository) SendMessage(chatId int64, message, url string) {
 
 	r.BotTG.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID:      chatId,
-		Text:        message,
+		Text:        message + "\n" + url,
 		ParseMode:   models.ParseModeMarkdownV1,
 		ReplyMarkup: keyboard,
 	})

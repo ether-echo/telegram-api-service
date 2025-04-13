@@ -1,6 +1,7 @@
 package producer
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/IBM/sarama"
 	"github.com/ether-echo/telegram-api-service/internal/model"
@@ -34,17 +35,32 @@ func NewKafkaProducer(brokerList []string) *KafkaProducer {
 
 // Отправка сообщения в Kafka
 func (kp *KafkaProducer) SendMessageToKafka(message model.MessageRequest) error {
+
+	value, err := json.Marshal(message)
+	if err != nil {
+		return fmt.Errorf("failed to marshal message: %v", err)
+	}
+
+	var topic string
+
+	switch message.Message {
+	case "/start":
+		topic = "start"
+	case "/support":
+		topic = "support"
+	default:
+		topic = "message"
+	}
 	// Создаем сообщение Kafka
 	kafkaMessage := &sarama.ProducerMessage{
-		Topic: "telegram-messages",
+		Topic: topic,
 		Key:   sarama.StringEncoder(fmt.Sprintf("%d", message.ChatId)),
-		Value: sarama.StringEncoder(message.Message),
+		Value: sarama.ByteEncoder(value),
 	}
 
 	// Отправляем сообщение в Kafka
 	kp.AsyncProducer.Input() <- kafkaMessage
 
-	log.Info(message)
 	// Ждем подтверждения или ошибки
 	select {
 	case <-kp.AsyncProducer.Successes():

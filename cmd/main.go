@@ -35,8 +35,12 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
+	repo := repository.NewRepository(conf, prod)
+
 	grpcServer := grpc.NewServer()
-	pb.RegisterMessageServiceServer(grpcServer, &grpc_server.MessageServer{})
+	pb.RegisterMessageServiceServer(grpcServer, &grpc_server.MessageServer{
+		IMessage: repo,
+	})
 
 	log.Info("Notification gRPC server started on port 50051")
 
@@ -45,8 +49,6 @@ func main() {
 			log.Fatalf("failed to serve: %v", err)
 		}
 	}()
-
-	repo := repository.NewRepository(conf, prod)
 
 	serv := service.NewService(repo)
 
