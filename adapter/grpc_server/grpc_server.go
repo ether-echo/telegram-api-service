@@ -18,9 +18,9 @@ type MessageServer struct {
 	IMessage IMessage
 }
 
-func (m *MessageServer) SendNotification(ctx context.Context, req *pb.MessageRequest) (*pb.MessageResponse, error) {
+func (m *MessageServer) SendMessage(ctx context.Context, req *pb.MessageRequest) (*pb.MessageResponse, error) {
 
-	log.Infof("Send message to user %d: %s", req.ChatId, req.Message)
+	log.Infof("Send message to user %d: %s, %s", req.ChatId, req.Message, req.URL)
 
 	m.IMessage.SendMessage(req.ChatId, req.Message, req.URL)
 
