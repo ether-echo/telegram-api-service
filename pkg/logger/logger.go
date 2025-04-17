@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -25,6 +26,9 @@ func BuildLogger(logLevel string) {
 		atomicLevel = zap.NewAtomicLevel()
 		SetLevel(logLevel)
 		encoderCfg := zap.NewProductionEncoderConfig()
+		encoderCfg.TimeKey = "time" // Ключ для времени в JSON
+		encoderCfg.EncodeTime = CustomTimeEncoder
+
 		logger = zap.New(zapcore.NewCore(zapcore.NewJSONEncoder(encoderCfg), os.Stdout, atomicLevel), zap.AddCaller())
 	})
 }
@@ -52,4 +56,9 @@ func Logger() *zap.Logger {
 	}
 
 	return logger
+}
+
+// CustomTimeEncoder - пользовательская функция для форматирования времени
+func CustomTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+	enc.AppendString(t.Format("2006-01-02 15:04:05"))
 }
