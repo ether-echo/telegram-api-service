@@ -8,8 +8,8 @@ import (
 
 type Config struct {
 	LogLevel string `env:"LOG_LEVEL" envDefault:"INFO"`
-	//Token    string `env:"TOKEN" envDefault:"7731167021:AAHb5ofDkyroDH0LUYznmRVeIycJCYe0c2M"`
-	Token string `env:"TOKEN" envDefault:"7746162400:AAF09997wm2OCcnvVcWK-V5q9fYzmrKWeXA"`
+	Token    string `env:"TOKEN" envDefault:"7731167021:AAHb5ofDkyroDH0LUYznmRVeIycJCYe0c2M"`
+	//Token string `env:"TOKEN" envDefault:"7746162400:AAF09997wm2OCcnvVcWK-V5q9fYzmrKWeXA"`
 }
 
 func ReadConfig() (*Config, error) {

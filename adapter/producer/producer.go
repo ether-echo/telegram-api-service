@@ -48,6 +48,8 @@ func (kp *KafkaProducer) SendMessageToKafka(message model.MessageRequest) error 
 		topic = "start"
 	case "/support":
 		topic = "support"
+	case "🔮 Расклад ТАРО":
+		topic = "taro"
 	default:
 		topic = "message"
 	}
