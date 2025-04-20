@@ -50,6 +50,8 @@ func (kp *KafkaProducer) SendMessageToKafka(message model.MessageRequest) error 
 		topic = "support"
 	case "🔮 Расклад ТАРО":
 		topic = "taro"
+	case "💸 Нумерология":
+		topic = "numerology"
 	default:
 		topic = "message"
 	}
