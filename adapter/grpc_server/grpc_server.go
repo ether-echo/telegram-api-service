@@ -2,8 +2,10 @@ package grpc_server
 
 import (
 	"context"
-	pb "github.com/ether-echo/protos/messageProcessor"
+
 	"github.com/ether-echo/telegram-api-service/pkg/logger"
+
+	pb "github.com/ether-echo/protos/messageProcessor"
 )
 
 var (
@@ -11,7 +13,7 @@ var (
 )
 
 type IMessage interface {
-	SendMessage(chatId int64, message, url string)
+	SendMessage(chatId int64, message, url, command string)
 }
 type MessageServer struct {
 	pb.UnimplementedMessageServiceServer
@@ -19,10 +21,9 @@ type MessageServer struct {
 }
 
 func (m *MessageServer) SendMessage(ctx context.Context, req *pb.MessageRequest) (*pb.MessageResponse, error) {
-
 	log.Infof("Send message to user %d: %s, %s", req.ChatId, req.Message, req.URL)
 
-	m.IMessage.SendMessage(req.ChatId, req.Message, req.URL)
+	m.IMessage.SendMessage(req.ChatId, req.Message, req.URL, req.Command)
 
 	return &pb.MessageResponse{Success: true}, nil
 }
