@@ -1,9 +1,9 @@
 package debug
 
 import (
+	"github.com/ether-echo/telegram-api-service/pkg/logger"
 	"net/http"
 	"net/http/pprof"
-	"studentgit.kata.academy/bukachev95/host-data-processor/pkg/logger"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )

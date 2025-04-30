@@ -60,7 +60,7 @@ func (r *Repository) Default(ctx context.Context, b *bot.Bot, update *models.Upd
 
 }
 
-func (r *Repository) SendMessage(chatId int64, message, url string) {
+func (r *Repository) SendMessage(chatId int64, message, url, command string) {
 
 	var keyboard models.ReplyMarkup
 
@@ -70,12 +70,25 @@ func (r *Repository) SendMessage(chatId int64, message, url string) {
 				{Text: "🔮 Расклад ТАРО"},
 				{Text: "💸 Нумерология"},
 			},
-			{
-				{Text: "💺 Поддержка"},
-			},
 		},
 		ResizeKeyboard:  true, // Уменьшает клавиатуру
-		OneTimeKeyboard: false,
+		OneTimeKeyboard: true,
+	}
+
+	if chatId == 480842950 || chatId == 689105464 {
+		keyboard = &models.ReplyKeyboardMarkup{
+			Keyboard: [][]models.KeyboardButton{
+				{
+					{Text: "🔮 Расклад ТАРО"},
+					{Text: "💸 Нумерология"},
+				},
+				{
+					{Text: "Админ-панель"},
+				},
+			},
+			ResizeKeyboard:  true, // Уменьшает клавиатуру
+			OneTimeKeyboard: true,
+		}
 	}
 
 	if url != "" {
@@ -88,6 +101,21 @@ func (r *Repository) SendMessage(chatId int64, message, url string) {
 					},
 				},
 			},
+		}
+	}
+
+	if command == "admin" {
+		keyboard = &models.ReplyKeyboardMarkup{
+			Keyboard: [][]models.KeyboardButton{
+				{
+					{Text: "Отправить сообщение всем"},
+				},
+				{
+					{Text: "Вывести всех пользователей"},
+				},
+			},
+			ResizeKeyboard:  true, // Уменьшает клавиатуру
+			OneTimeKeyboard: true,
 		}
 	}
 

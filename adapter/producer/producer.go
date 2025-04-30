@@ -6,6 +6,7 @@ import (
 	"github.com/IBM/sarama"
 	"github.com/ether-echo/telegram-api-service/internal/model"
 	"github.com/ether-echo/telegram-api-service/pkg/logger"
+	"sync"
 	"time"
 )
 
@@ -36,10 +37,16 @@ func NewKafkaProducer(brokerList []string) *KafkaProducer {
 // Отправка сообщения в Kafka
 func (kp *KafkaProducer) SendMessageToKafka(message model.MessageRequest) error {
 
+	var mu sync.Mutex
+
 	value, err := json.Marshal(message)
 	if err != nil {
 		return fmt.Errorf("failed to marshal message: %v", err)
 	}
+
+	isAdmin := message.ChatId == 480842950 || message.ChatId == 689105464
+
+	messageStates := make(map[int64]struct{})
 
 	var topic string
 
@@ -52,8 +59,34 @@ func (kp *KafkaProducer) SendMessageToKafka(message model.MessageRequest) error 
 		topic = "taro"
 	case "💸 Нумерология":
 		topic = "numerology"
+	case "Админ-панель":
+		if isAdmin {
+			topic = "admin"
+		} else {
+			topic = "message"
+		}
+	case "Отправить сообщение всем":
+		if isAdmin {
+			mu.Lock()
+			messageStates[message.ChatId] = struct{}{}
+			mu.Unlock()
+		} else {
+			topic = "message"
+		}
+	case "Вывести всех пользователей":
+		if isAdmin {
+			topic = "get_all_users"
+		} else {
+			topic = "message"
+		}
 	default:
 		topic = "message"
+		if _, ok := messageStates[message.ChatId]; ok {
+			topic = "send_notification"
+			mu.Lock()
+			delete(messageStates, message.ChatId)
+			mu.Unlock()
+		}
 	}
 	// Создаем сообщение Kafka
 	kafkaMessage := &sarama.ProducerMessage{

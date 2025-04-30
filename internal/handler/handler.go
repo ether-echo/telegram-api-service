@@ -27,11 +27,6 @@ func (h *Handler) DefaultHandler(ctx context.Context, b *bot.Bot, update *models
 
 func (h *Handler) StartBot(ctx context.Context, rep *repository.Repository) {
 
-	//rep.BotTG.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypePrefix, h.StartHandler)
-	//rep.BotTG.RegisterHandler(bot.HandlerTypeMessageText, "/support", bot.MatchTypePrefix, h.SupportHandler)
-	//rep.BotTG.RegisterHandler(bot.HandlerTypeMessageText, "💺 Поддержка", bot.MatchTypePrefix, h.SupportHandler)
-	//rep.BotTG.RegisterHandler(bot.HandlerTypeMessageText, "🔮 Расклад ТАРО", bot.MatchTypePrefix, h.LayoutTAROHandler)
-	//rep.BotTG.RegisterHandler(bot.HandlerTypeMessageText, "💸 Нумерология", bot.MatchTypePrefix, h.NumerologyHandler)
 	rep.BotTG.RegisterHandler(bot.HandlerTypeMessageText, "", bot.MatchTypePrefix, h.DefaultHandler)
 
 	rep.BotTG.Start(ctx)
