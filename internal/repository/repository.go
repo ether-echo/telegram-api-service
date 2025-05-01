@@ -72,7 +72,7 @@ func (r *Repository) SendMessage(chatId int64, message, url, command string) {
 			},
 		},
 		ResizeKeyboard:  true, // Уменьшает клавиатуру
-		OneTimeKeyboard: true,
+		OneTimeKeyboard: false,
 	}
 
 	if chatId == 480842950 || chatId == 689105464 {
@@ -87,7 +87,7 @@ func (r *Repository) SendMessage(chatId int64, message, url, command string) {
 				},
 			},
 			ResizeKeyboard:  true, // Уменьшает клавиатуру
-			OneTimeKeyboard: true,
+			OneTimeKeyboard: false,
 		}
 	}
 
@@ -115,7 +115,7 @@ func (r *Repository) SendMessage(chatId int64, message, url, command string) {
 				},
 			},
 			ResizeKeyboard:  true, // Уменьшает клавиатуру
-			OneTimeKeyboard: true,
+			OneTimeKeyboard: false,
 		}
 	}
 

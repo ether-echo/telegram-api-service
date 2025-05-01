@@ -25,11 +25,24 @@ func NewKafkaProducer(brokerList []string) *KafkaProducer {
 	config.Producer.RequiredAcks = sarama.WaitForLocal     // Only wait for the leader to ack
 	config.Producer.Compression = sarama.CompressionSnappy // Compress messages
 	config.Producer.Flush.Frequency = 500 * time.Millisecond
+	config.Producer.Return.Successes = true
+	config.Producer.Return.Errors = true
 
 	producer, err := sarama.NewAsyncProducer(brokerList, config)
 	if err != nil {
 		log.Fatalf("Failed to start Sarama producer: %v", err)
 	}
+
+	go func() {
+		for {
+			select {
+			case successMsg := <-producer.Successes():
+				log.Infof("Message delivered to topic %s, partition %d, offset %d", successMsg.Topic, successMsg.Partition, successMsg.Offset)
+			case errMsg := <-producer.Errors():
+				log.Errorf("Failed to deliver message: %v", errMsg.Err)
+			}
+		}
+	}()
 
 	return &KafkaProducer{AsyncProducer: producer}
 }
@@ -98,14 +111,7 @@ func (kp *KafkaProducer) SendMessageToKafka(message model.MessageRequest) error 
 	// Отправляем сообщение в Kafka
 	kp.AsyncProducer.Input() <- kafkaMessage
 
-	// Ждем подтверждения или ошибки
-	select {
-	case <-kp.AsyncProducer.Successes():
-		log.Infof("%v", message)
-		return nil
-	case err := <-kp.AsyncProducer.Errors():
-		return fmt.Errorf("sarama producer failed: %v", err.Err)
-	}
+	return nil
 }
 
 func (kp *KafkaProducer) Close() {
