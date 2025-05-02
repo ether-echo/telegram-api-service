@@ -71,8 +71,8 @@ func (r *Repository) SendMessage(chatId int64, message, url, command string) {
 				{Text: "💸 Нумерология"},
 			},
 		},
-		ResizeKeyboard:  true, // Уменьшает клавиатуру
-		OneTimeKeyboard: false,
+		ResizeKeyboard:  true,  // Уменьшает клавиатуру
+		OneTimeKeyboard: false, // Клавиатура отображается один раз
 	}
 
 	if chatId == 480842950 || chatId == 689105464 {
@@ -115,7 +115,7 @@ func (r *Repository) SendMessage(chatId int64, message, url, command string) {
 				},
 			},
 			ResizeKeyboard:  true, // Уменьшает клавиатуру
-			OneTimeKeyboard: false,
+			OneTimeKeyboard: true,
 		}
 	}
 
