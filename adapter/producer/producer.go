@@ -16,6 +16,7 @@ var (
 
 type KafkaProducer struct {
 	AsyncProducer sarama.AsyncProducer
+	messageStates map[int64]struct{}
 }
 
 func NewKafkaProducer(brokerList []string) *KafkaProducer {
@@ -44,7 +45,9 @@ func NewKafkaProducer(brokerList []string) *KafkaProducer {
 		}
 	}()
 
-	return &KafkaProducer{AsyncProducer: producer}
+	return &KafkaProducer{AsyncProducer: producer,
+		messageStates: make(map[int64]struct{}),
+	}
 }
 
 // Отправка сообщения в Kafka
@@ -58,8 +61,6 @@ func (kp *KafkaProducer) SendMessageToKafka(message model.MessageRequest) error 
 	}
 
 	isAdmin := message.ChatId == 480842950 || message.ChatId == 689105464
-
-	messageStates := make(map[int64]struct{})
 
 	var topic string
 
@@ -81,7 +82,7 @@ func (kp *KafkaProducer) SendMessageToKafka(message model.MessageRequest) error 
 	case "Отправить сообщение всем":
 		if isAdmin {
 			mu.Lock()
-			messageStates[message.ChatId] = struct{}{}
+			kp.messageStates[message.ChatId] = struct{}{}
 			mu.Unlock()
 		} else {
 			topic = "message"
@@ -94,10 +95,10 @@ func (kp *KafkaProducer) SendMessageToKafka(message model.MessageRequest) error 
 		}
 	default:
 		topic = "message"
-		if _, ok := messageStates[message.ChatId]; ok {
+		if _, ok := kp.messageStates[message.ChatId]; ok {
 			topic = "send_notification"
 			mu.Lock()
-			delete(messageStates, message.ChatId)
+			delete(kp.messageStates, message.ChatId)
 			mu.Unlock()
 		}
 	}
